@@ -147,6 +147,52 @@
         .links a:hover {
             color: var(--accent);
         }
+
+        /* Post Management List Styles */
+        .post-management {
+            margin-top: 40px;
+        }
+
+        .post-item {
+            background: var(--card);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .post-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .post-info h4 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .post-info span {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            width: auto;
+            border-radius: 6px;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
     </style>
 </head>
 
@@ -196,6 +242,13 @@
                 <p class="subtitle" style="margin-top: 12px; text-align: center; font-size: 0.8rem;">
                     O botão do LinkedIn copiará o texto e abrirá o LinkedIn para você colar.
                 </p>
+            </div>
+        </div>
+
+        <div class="post-management">
+            <h2 style="margin-bottom: 20px; font-size: 1.25rem;">Gerenciar Insights</h2>
+            <div id="postsList">
+                <p class="subtitle" style="text-align: center; padding: 20px;">Carregando artigos...</p>
             </div>
         </div>
 
@@ -275,6 +328,66 @@
             statusMsg.style.display = 'block';
             statusMsg.className = 'status-msg ' + (type === 'error' ? 'status-error' : 'status-success');
         }
+
+        // --- Gestão de Posts ---
+        const postsList = document.getElementById('postsList');
+
+        // Detectar se estamos em produção (Vercel) ou local
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_BASE = isLocal ? '/api/posts' : '/api/publish';
+
+        async function loadPosts() {
+            try {
+                const response = await fetch(API_BASE);
+                const posts = await response.json();
+
+                if (posts.length === 0) {
+                    postsList.innerHTML = '<p class="subtitle" style="text-align: center; padding: 20px;">Nenhum artigo encontrado.</p>';
+                    return;
+                }
+
+                postsList.innerHTML = posts.map(post => {
+                    const dateStr = new Date(post.date).toLocaleDateString('pt-BR');
+                    const filename = post.filename || `posts/${new Date(post.date).getTime()}-${post.title.toLowerCase().replace(/\s+/g, '-')}.json`;
+                    
+                    return `
+                        <div class="post-item">
+                            <div class="post-info">
+                                <h4>${post.title}</h4>
+                                <span>${post.category} • ${dateStr}</span>
+                            </div>
+                            <button onclick="deletePost('${filename}')" class="btn btn-delete">Apagar</button>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                postsList.innerHTML = '<p class="status-msg status-error">Erro ao carregar artigos.</p>';
+            }
+        }
+
+        async function deletePost(filename) {
+            if (!confirm('Tem certeza que deseja apagar este artigo?')) return;
+
+            // Formatação da URL de delete para Vercel vs Local
+            const url = isLocal ? `/api/posts/${filename}` : `/api/publish?filename=${filename}`;
+
+            try {
+                const response = await fetch(url, { method: 'DELETE' });
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Artigo excluído com sucesso!');
+                    loadPosts(); // Recarregar lista
+                } else {
+                    alert('Erro ao excluir: ' + (result.error || 'Erro desconhecido'));
+                }
+            } catch (err) {
+                alert('Erro de conexão ao tentar excluir.');
+            }
+        }
+
+        // Carregar posts ao abrir a página
+        loadPosts();
     </script>
 </body>
 
