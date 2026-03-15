@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Blog | Sheldon Feitosa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .status-msg {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .links a {
+            color: #64748b;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Editor de Insights</h1>
+            <p class="subtitle">Escreva e publique diretamente no seu site.</p>
+        </header>
+
+        <div class="card">
+            <form id="postForm">
+                <div class="form-group">
+                    <label for="title">Título do Artigo</label>
+                    <input type="text" id="title" required placeholder="Ex: O Futuro da IA na Saúde">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Categoria</label>
+                    <select id="category" required>
+                        <option value="Gestão">Gestão</option>
+                        <option value="Qualidade">Qualidade</option>
+                        <option value="Inovação & IA">Inovação & IA</option>
+                        <option value="Tecnologia">Tecnologia</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Conteúdo (Markdown ou Texto Simples)</label>
+                    <textarea id="content" rows="10" required placeholder="Escreva seu artigo aqui..."></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary">Publicar Artigo</button>
+            </form>
+
+            <div id="statusMsg" class="status-msg"></div>
+
+            <div id="postActions"
+                style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+                <p style="font-weight: 600; margin-bottom: 12px; font-size: 0.9rem;">Próximos Passos:</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <a href="/#blog" target="_blank" class="btn" style="background: #e2e8f0; color: var(--primary);">Ver
+                        no Site</a>
+                    <button id="linkedinBtn" class="btn" style="background: #0077b5; color: white;">Postar no
+                        LinkedIn</button>
+                </div>
+                <p class="subtitle" style="margin-top: 12px; text-align: center; font-size: 0.8rem;">
+                    O botão do LinkedIn copiará o texto e abrirá o LinkedIn para você colar.
+                </p>
+            </div>
+        </div>
+
+        <div class="links">
+            <a href="/">← Voltar para o Site</a>
+        </div>
+    </div>
+
+    <script>
+        const postForm = document.getElementById('postForm');
+        const statusMsg = document.getElementById('statusMsg');
+        const submitBtn = document.getElementById('submitBtn');
+        const postActions = document.getElementById('postActions');
+        const linkedinBtn = document.getElementById('linkedinBtn');
+
+        let lastPostContent = '';
+        let lastPostTitle = '';
+
+        postForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const category = document.getElementById('category').value;
+
+            const data = {
+                title: title,
+                category: category,
+                content: content,
+                date: new Date().toISOString()
+            };
+
+            lastPostTitle = title;
+            lastPostContent = content;
+
+            showStatus('Publicando...', 'success');
+            submitBtn.disabled = true;
+            postActions.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showStatus('🎉 Artigo publicado com sucesso no site!', 'success');
+                    postActions.style.display = 'block';
+                    // Optional: postForm.reset(); 
+                } else {
+                    showStatus('❌ Erro: ' + (result.error || 'Falha na publicação'), 'error');
+                }
+            } catch (err) {
+                showStatus('❌ Erro de conexão com o servidor', 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        linkedinBtn.addEventListener('click', () => {
+            const textToCopy = `🚀 Novo Artigo: ${lastPostTitle}\n\n${lastPostContent}\n\nLeia mais em: https://sheldonfeitosa.com.br`;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Conteúdo copiado para a área de transferência! Abrindo o LinkedIn...');
+                window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://sheldonfeitosa.com.br'), '_blank');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                window.open('https://www.linkedin.com/feed/', '_blank');
+            });
+        });
+
+        function showStatus(msg, type) {
+            statusMsg.textContent = msg;
+            statusMsg.style.display = 'block';
+            statusMsg.className = 'status-msg ' + (type === 'error' ? 'status-error' : 'status-success');
+        }
+    </script>
+</body>
+
+</html>
