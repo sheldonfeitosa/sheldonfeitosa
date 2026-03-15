@@ -1,0 +1,19 @@
+{
+    "name": "sheldon-blog-automation",
+    "version": "1.0.0",
+    "description": "Ferramentas de automação para o blog do Sheldon",
+    "main": "publish.js",
+    "scripts": {
+        "admin": "node admin.js",
+        "publish": "node publish.js"
+    },
+    "keywords": [],
+    "author": "Sheldon Feitosa",
+    "license": "ISC",
+    "dependencies": {
+        "body-parser": "^2.2.2",
+        "express": "^5.2.1",
+        "glob": "^10.3.10",
+        "open": "^10.0.3"
+    }
+}
