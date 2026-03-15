@@ -7,10 +7,6 @@ const https = require('https');
  */
 
 module.exports = async (req, res) => {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Método não permitido' });
-    }
-
     const { GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH = 'main' } = process.env;
 
     if (!GITHUB_TOKEN || !GITHUB_REPO) {
@@ -19,38 +15,76 @@ module.exports = async (req, res) => {
         });
     }
 
-    try {
-        const post = req.body;
-        if (!post.title || !post.content) {
-            return res.status(400).json({ error: 'Título e conteúdo são obrigatórios.' });
+    // LISTAR POSTS (GET)
+    if (req.method === 'GET') {
+        try {
+            const posts = await fetchAllPosts(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH);
+            return res.status(200).json(posts);
+        } catch (err) {
+            return res.status(500).json({ error: 'Erro ao listar posts: ' + err.message });
         }
-
-        const date = new Date(post.date || Date.now());
-        const filename = `posts/${date.getTime()}-${post.title.toLowerCase().replace(/\s+/g, '-')}.json`;
-
-        console.log(`Iniciando publicação no GitHub: ${filename}`);
-
-        // 1. Obter todos os posts atuais para gerar o novo HTML
-        const allPosts = await fetchAllPosts(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH);
-        // Adicionar o novo post
-        allPosts.push(post);
-        allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        // 2. Gerar conteúdos atualizados
-        const newPostContent = JSON.stringify(post, null, 2);
-        const newIndexHtml = await generateUpdatedIndex(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, allPosts);
-        const newFeedXml = generateFeedXml(allPosts);
-
-        // 3. Salvar no GitHub (sequencial para simplicidade)
-        await uploadToGithub(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, filename, newPostContent, `Add post: ${post.title}`);
-        await uploadToGithub(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, 'index.html', newIndexHtml, `Update index for: ${post.title}`);
-        await uploadToGithub(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, 'feed.xml', newFeedXml, `Update feed for: ${post.title}`);
-
-        res.status(200).json({ success: true, message: 'Artigo publicado com sucesso no GitHub!' });
-    } catch (err) {
-        console.error('Erro ao publicar no GitHub:', err);
-        res.status(500).json({ error: 'Erro ao salvar no GitHub: ' + err.message });
     }
+
+    // PUBLICAR POST (POST)
+    if (req.method === 'POST') {
+        try {
+            const post = req.body;
+            if (!post.title || !post.content) {
+                return res.status(400).json({ error: 'Título e conteúdo são obrigatórios.' });
+            }
+
+            const date = new Date(post.date || Date.now());
+            const filename = `posts/${date.getTime()}-${post.title.toLowerCase().replace(/\s+/g, '-')}.json`;
+
+            console.log(`Iniciando publicação no GitHub: ${filename}`);
+
+            const allPosts = await fetchAllPosts(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH);
+            allPosts.push(post);
+            allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const newPostContent = JSON.stringify(post, null, 2);
+            const newIndexHtml = await generateUpdatedIndex(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, allPosts);
+            const newFeedXml = generateFeedXml(allPosts);
+
+            await uploadToGithub(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, filename, newPostContent, `Add post: ${post.title}`);
+            await uploadToGithub(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, 'index.html', newIndexHtml, `Update index for: ${post.title}`);
+            await uploadToGithub(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, 'feed.xml', newFeedXml, `Update feed for: ${post.title}`);
+
+            return res.status(200).json({ success: true, message: 'Artigo publicado com sucesso no GitHub!' });
+        } catch (err) {
+            console.error('Erro ao publicar no GitHub:', err);
+            return res.status(500).json({ error: 'Erro ao salvar no GitHub: ' + err.message });
+        }
+    }
+
+    // DELETAR POST (DELETE)
+    if (req.method === 'DELETE') {
+        try {
+            const { filename } = req.query; // ex: ?filename=posts/123-titulo.json
+            if (!filename) return res.status(400).json({ error: 'O nome do arquivo é obrigatório.' });
+
+            console.log(`Deletando do GitHub: ${filename}`);
+
+            // 1. Deletar o arquivo do post
+            await deleteFromGithub(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, filename, `Delete post: ${filename}`);
+
+            // 2. Obter posts restantes para atualizar site
+            const allPosts = await fetchAllPosts(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH);
+            const newIndexHtml = await generateUpdatedIndex(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, allPosts);
+            const newFeedXml = generateFeedXml(allPosts);
+
+            // 3. Atualizar outros arquivos
+            await uploadToGithub(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, 'index.html', newIndexHtml, `Update index after deleting: ${filename}`);
+            await uploadToGithub(GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, 'feed.xml', newFeedXml, `Update feed after deleting: ${filename}`);
+
+            return res.status(200).json({ success: true, message: 'Artigo excluído com sucesso do GitHub!' });
+        } catch (err) {
+            console.error('Erro ao deletar do GitHub:', err);
+            return res.status(500).json({ error: 'Erro ao deletar no GitHub: ' + err.message });
+        }
+    }
+
+    return res.status(405).json({ error: 'Método não permitido' });
 };
 
 async function fetchAllPosts(token, repo, branch) {
@@ -165,6 +199,16 @@ async function uploadToGithub(token, repo, branch, path, content, message) {
     if (sha) body.sha = sha;
 
     return githubRequest(token, 'PUT', `/repos/${repo}/contents/${path}`, body);
+}
+
+async function deleteFromGithub(token, repo, branch, path, message) {
+    const existing = await githubRequest(token, 'GET', `/repos/${repo}/contents/${path}?ref=${branch}`);
+    const body = {
+        message,
+        sha: existing.sha,
+        branch
+    };
+    return githubRequest(token, 'DELETE', `/repos/${repo}/contents/${path}`, body);
 }
 
 function githubRequest(token, method, path, body = null) {
