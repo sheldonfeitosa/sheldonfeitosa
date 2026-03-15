@@ -40,6 +40,42 @@ app.post('/api/publish', (req, res) => {
     }
 });
 
+// API para listar todos os artigos
+app.get('/api/posts', (req, res) => {
+    const postsDir = path.join(__dirname, 'posts');
+    if (!fs.existsSync(postsDir)) return res.json([]);
+
+    const files = fs.readdirSync(postsDir);
+    const posts = files
+        .filter(f => f.endsWith('.json'))
+        .map(f => {
+            const content = JSON.parse(fs.readFileSync(path.join(postsDir, f), 'utf8'));
+            return { filename: f, ...content };
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    res.json(posts);
+});
+
+// API para deletar um artigo
+app.delete('/api/posts/:filename', (req, res) => {
+    try {
+        const { filename } = req.params;
+        const filePath = path.join(__dirname, 'posts', filename);
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`🗑️ Post deletado: ${filename}`);
+            publish();
+            res.json({ success: true, message: 'Artigo excluído com sucesso!' });
+        } else {
+            res.status(404).json({ error: 'Artigo não encontrado.' });
+        }
+    } catch (err) {
+        console.error('Erro ao deletar post:', err);
+        res.status(500).json({ error: 'Erro interno ao excluir o artigo.' });
+    }
+});
+
 // Rota raiz do admin
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin', 'index.html'));
