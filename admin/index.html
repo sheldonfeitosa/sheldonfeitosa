@@ -193,6 +193,20 @@
         .btn-delete:hover {
             background: #fecaca;
         }
+
+        .btn-share {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            width: auto;
+            border-radius: 6px;
+            margin-right: 8px;
+        }
+
+        .btn-share:hover {
+            background: #bae6fd;
+        }
     </style>
 </head>
 
@@ -365,13 +379,20 @@
                     const dateStr = new Date(post.date).toLocaleDateString('pt-BR');
                     const filename = post.filename || `posts/${new Date(post.date).getTime()}-${post.title.toLowerCase().replace(/\s+/g, '-')}.json`;
                     
+                    // Escapar aspas para não quebrar o HTML
+                    const safeTitle = post.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeContent = post.content.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
                     return `
                         <div class="post-item">
                             <div class="post-info">
                                 <h4>${post.title}</h4>
                                 <span>${post.category} • ${dateStr}</span>
                             </div>
-                            <button onclick="deletePost('${filename}')" class="btn btn-delete">Apagar</button>
+                            <div>
+                                <button onclick="sharePost('${safeTitle}', '${safeContent}')" class="btn-share">Compartilhar</button>
+                                <button onclick="deletePost('${filename}')" class="btn btn-delete">Apagar</button>
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -398,6 +419,19 @@
                 }
             } catch (err) {
                 alert('Erro de conexão ao tentar excluir.');
+            }
+        }
+
+        async function sharePost(title, content) {
+            const textToCopy = `🚀 Insight: ${title}\n\n${content}\n\nLeia mais em: https://sheldonfeitosa.com.br`;
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                alert('Conteúdo copiado! Agora é só colar (Ctrl+V) no LinkedIn.');
+                window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://sheldonfeitosa.com.br'), '_blank');
+            } catch (err) {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar texto. Tente selecionar e copiar manualmente.');
             }
         }
 
