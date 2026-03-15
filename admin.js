@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(__dirname)); // Serve o site estático
-app.use('/admin', express.static(path.join(__dirname, 'admin')));
+app.use('/painel', express.static(path.join(__dirname, 'painel')));
 
 // API para publicar um novo artigo
 app.post('/api/publish', (req, res) => {
@@ -77,10 +77,10 @@ app.delete('/api/posts/:filename', (req, res) => {
 });
 
 // Rota raiz do admin
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin', 'index.html'));
+app.get('/painel', (req, res) => {
+    res.sendFile(path.join(__dirname, 'painel', 'index.html'));
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Painel do Blog rodando em http://localhost:${PORT}/admin`);
+    console.log(`🚀 Painel do Blog rodando em http://localhost:${PORT}/painel`);
 });
