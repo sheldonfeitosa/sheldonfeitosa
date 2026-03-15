@@ -321,7 +321,12 @@
                 if (response.ok) {
                     showStatus('🎉 Artigo publicado com sucesso no site!', 'success');
                     postActions.style.display = 'block';
-                    // Optional: postForm.reset(); 
+                    // Atualizar referências para o botão do topo
+                    lastPostTitle = title;
+                    lastPostContent = content;
+                    lastPostVideo = videoUrl;
+                    
+                    loadPosts(); // Atualizar lista
                 } else {
                     showStatus('❌ Erro: ' + (result.error || 'Falha na publicação'), 'error');
                 }
@@ -332,8 +337,14 @@
             }
         });
 
+        let lastPostVideo = '';
+
         linkedinBtn.addEventListener('click', () => {
-            const textToCopy = `🚀 Novo Artigo: ${lastPostTitle}\n\n${lastPostContent}\n\nLeia mais em: https://sheldonfeitosa.com.br`;
+            let textToCopy = `🚀 Novo Artigo: ${lastPostTitle}\n\n${lastPostContent}\n\n`;
+            if (lastPostVideo) {
+                textToCopy += `Assista o vídeo: ${lastPostVideo}\n\n`;
+            }
+            textToCopy += `Leia mais em: https://sheldonfeitosa.com.br`;
 
             navigator.clipboard.writeText(textToCopy).then(() => {
                 // Feedback visual rápido no botão
@@ -380,8 +391,9 @@
                     const filename = post.filename || `posts/${new Date(post.date).getTime()}-${post.title.toLowerCase().replace(/\s+/g, '-')}.json`;
                     
                     // Escapar aspas para não quebrar o HTML
-                    const safeTitle = post.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    const safeContent = post.content.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeTitle = (post.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeContent = (post.content || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeVideo = (post.videoUrl || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                     return `
                         <div class="post-item">
@@ -390,7 +402,7 @@
                                 <span>${post.category} • ${dateStr}</span>
                             </div>
                             <div>
-                                <button onclick="sharePost('${safeTitle}', '${safeContent}')" class="btn-share">Compartilhar</button>
+                                <button onclick="sharePost('${safeTitle}', '${safeContent}', '${safeVideo}')" class="btn-share">Compartilhar</button>
                                 <button onclick="deletePost('${filename}')" class="btn btn-delete">Apagar</button>
                             </div>
                         </div>
@@ -422,8 +434,12 @@
             }
         }
 
-        async function sharePost(title, content) {
-            const textToCopy = `🚀 Insight: ${title}\n\n${content}\n\nLeia mais em: https://sheldonfeitosa.com.br`;
+        async function sharePost(title, content, videoUrl) {
+            let textToCopy = `🚀 Insight: ${title}\n\n${content}\n\n`;
+            if (videoUrl) {
+                textToCopy += `Veja o vídeo aqui: ${videoUrl}\n\n`;
+            }
+            textToCopy += `Leia mais em: https://sheldonfeitosa.com.br`;
 
             try {
                 await navigator.clipboard.writeText(textToCopy);
