@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Blog | Sheldon Feitosa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .status-msg {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .links a {
+            color: #64748b;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            color: var(--accent);
+        }
+
+        /* Post Management List Styles */
+        .post-management {
+            margin-top: 40px;
+        }
+
+        .post-item {
+            background: var(--card);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .post-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .post-info h4 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .post-info span {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            width: auto;
+            border-radius: 6px;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
+        .btn-share {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            width: auto;
+            border-radius: 6px;
+            margin-right: 8px;
+        }
+
+        .btn-share:hover {
+            background: #bae6fd;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Editor de Insights</h1>
+            <!-- Deploy Version: 2026-03-15-15-22 -->
+            <p class="subtitle">Escreva e publique diretamente no seu site e LinkedIn.</p>
+            <a href="/" style="font-size: 0.8rem; color: #64748b; text-decoration: none;">Sair do Painel</a>
+        </header>
+
+        <div class="card">
+            <form id="postForm">
+                <div class="form-group">
+                    <label for="title">Título do Artigo</label>
+                    <input type="text" id="title" required placeholder="Ex: O Futuro da IA na Saúde">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Categoria</label>
+                    <select id="category" required>
+                        <option value="Gestão">Gestão</option>
+                        <option value="Qualidade">Qualidade</option>
+                        <option value="Inovação & IA">Inovação & IA</option>
+                        <option value="Tecnologia">Tecnologia</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Conteúdo (Markdown ou Texto Simples)</label>
+                    <textarea id="content" rows="10" required placeholder="Escreva seu texto aqui. Cada quebra de linha vira um parágrafo novo..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="videoUrl">Link do Vídeo (Opcional - YouTube)</label>
+                    <input type="url" id="videoUrl" placeholder="Ex: https://www.youtube.com/watch?v=..." >
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary">Publicar Artigo</button>
+            </form>
+
+            <div id="statusMsg" class="status-msg"></div>
+
+            <div id="postActions"
+                style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+                <p style="font-weight: 600; margin-bottom: 12px; font-size: 0.9rem;">Próximos Passos:</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <a href="/#blog" target="_blank" class="btn" style="background: #e2e8f0; color: var(--primary);">Ver
+                        no Site</a>
+                    <button id="linkedinBtn" class="btn" style="background: #0077b5; color: white;">Copiar Texto e Abrir LinkedIn</button>
+                </div>
+                <p class="subtitle" style="margin-top: 12px; text-align: center; font-size: 0.85rem; color: #1e293b; background: #e0f2fe; padding: 10px; border-radius: 6px;">
+                    ✅ <b>O texto já foi copiado!</b> Quando o LinkedIn abrir, basta clicar em "Sobre o que você quer falar?" e apertar <b>Ctrl + V</b> para colar.
+                </p>
+            </div>
+        </div>
+
+        <div class="post-management">
+            <h2 style="margin-bottom: 20px; font-size: 1.25rem;">Gerenciar Insights</h2>
+            <div id="postsList">
+                <p class="subtitle" style="text-align: center; padding: 20px;">Carregando artigos...</p>
+            </div>
+        </div>
+
+        <div class="links">
+            <a href="/">← Voltar para o Site</a>
+        </div>
+    </div>
+
+    <script>
+        const postForm = document.getElementById('postForm');
+        const statusMsg = document.getElementById('statusMsg');
+        const submitBtn = document.getElementById('submitBtn');
+        const postActions = document.getElementById('postActions');
+        const linkedinBtn = document.getElementById('linkedinBtn');
+
+        let lastPostContent = '';
+        let lastPostTitle = '';
+
+        postForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const category = document.getElementById('category').value;
+            const videoUrl = document.getElementById('videoUrl').value;
+
+            const data = {
+                title: title,
+                category: category,
+                content: content,
+                videoUrl: videoUrl,
+                date: new Date().toISOString()
+            };
+
+            lastPostTitle = title;
+            lastPostContent = content;
+
+            showStatus('Publicando...', 'success');
+            submitBtn.disabled = true;
+            postActions.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showStatus('🎉 Artigo publicado com sucesso no site!', 'success');
+                    postActions.style.display = 'block';
+                    // Atualizar referências para o botão do topo
+                    lastPostTitle = title;
+                    lastPostContent = content;
+                    lastPostVideo = videoUrl;
+                    
+                    loadPosts(); // Atualizar lista
+                } else {
+                    showStatus('❌ Erro: ' + (result.error || 'Falha na publicação'), 'error');
+                }
+            } catch (err) {
+                showStatus('❌ Erro de conexão com o servidor', 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        let lastPostVideo = '';
+
+        linkedinBtn.addEventListener('click', () => {
+            let textToCopy = `🚀 Novo Artigo: ${lastPostTitle}\n\n${lastPostContent}\n\n`;
+            if (lastPostVideo) {
+                textToCopy += `Assista o vídeo: ${lastPostVideo}\n\n`;
+            }
+            textToCopy += `Leia mais em: https://sheldonfeitosa.com.br`;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Feedback visual rápido no botão
+                const originalText = linkedinBtn.textContent;
+                linkedinBtn.textContent = '✅ Copiado! Abrindo...';
+                linkedinBtn.style.background = '#059669';
+                
+                setTimeout(() => {
+                    linkedinBtn.textContent = originalText;
+                    linkedinBtn.style.background = '#0077b5';
+                    window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://sheldonfeitosa.com.br'), '_blank');
+                }, 1000);
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                window.open('https://www.linkedin.com/feed/', '_blank');
+            });
+        });
+
+        function showStatus(msg, type) {
+            statusMsg.textContent = msg;
+            statusMsg.style.display = 'block';
+            statusMsg.className = 'status-msg ' + (type === 'error' ? 'status-error' : 'status-success');
+        }
+
+        // --- Gestão de Posts ---
+        const postsList = document.getElementById('postsList');
+
+        // Detectar se estamos em produção (Vercel) ou local
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_BASE = isLocal ? '/api/posts' : '/api/publish';
+
+        async function loadPosts() {
+            try {
+                const response = await fetch(API_BASE);
+                const posts = await response.json();
+
+                if (posts.length === 0) {
+                    postsList.innerHTML = '<p class="subtitle" style="text-align: center; padding: 20px;">Nenhum artigo encontrado.</p>';
+                    return;
+                }
+
+                postsList.innerHTML = posts.map(post => {
+                    const dateStr = new Date(post.date).toLocaleDateString('pt-BR');
+                    const filename = post.filename || `posts/${new Date(post.date).getTime()}-${post.title.toLowerCase().replace(/\s+/g, '-')}.json`;
+                    
+                    // Escapar aspas para não quebrar o HTML
+                    const safeTitle = (post.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeContent = (post.content || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeVideo = (post.videoUrl || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                    return `
+                        <div class="post-item">
+                            <div class="post-info">
+                                <h4>${post.title}</h4>
+                                <span>${post.category} • ${dateStr}</span>
+                            </div>
+                            <div>
+                                <button onclick="sharePost('${safeTitle}', '${safeContent}', '${safeVideo}')" class="btn-share">Compartilhar</button>
+                                <button onclick="deletePost('${filename}')" class="btn btn-delete">Apagar</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                postsList.innerHTML = '<p class="status-msg status-error">Erro ao carregar artigos.</p>';
+            }
+        }
+
+        async function deletePost(filename) {
+            if (!confirm('Tem certeza que deseja apagar este artigo?')) return;
+
+            // Formatação da URL de delete para Vercel vs Local
+            const url = isLocal ? `/api/posts/${filename}` : `/api/publish?filename=${filename}`;
+
+            try {
+                const response = await fetch(url, { method: 'DELETE' });
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Artigo excluído com sucesso!');
+                    loadPosts(); // Recarregar lista
+                } else {
+                    alert('Erro ao excluir: ' + (result.error || 'Erro desconhecido'));
+                }
+            } catch (err) {
+                alert('Erro de conexão ao tentar excluir.');
+            }
+        }
+
+        async function sharePost(title, content, videoUrl) {
+            let textToCopy = `🚀 Insight: ${title}\n\n${content}\n\n`;
+            if (videoUrl) {
+                textToCopy += `Veja o vídeo aqui: ${videoUrl}\n\n`;
+            }
+            textToCopy += `Leia mais em: https://sheldonfeitosa.com.br`;
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                alert('Conteúdo copiado! Agora é só colar (Ctrl+V) no LinkedIn.');
+                window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://sheldonfeitosa.com.br'), '_blank');
+            } catch (err) {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar texto. Tente selecionar e copiar manualmente.');
+            }
+        }
+
+        // Carregar posts ao abrir a página
+        loadPosts();
+    </script>
+</body>
+
+</html>
