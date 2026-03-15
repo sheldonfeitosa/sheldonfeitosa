@@ -30,14 +30,21 @@ function publish() {
     } else {
         posts.forEach(post => {
             const dateStr = new Date(post.date).toLocaleDateString('pt-BR');
+            // Mapear categoria para placeholder de cor do CSS
+            let placeholderClass = 'placeholder-management';
+            const cat = (post.category || '').toLowerCase();
+            if (cat.includes('tec') || cat.includes('api')) placeholderClass = 'placeholder-tech';
+            if (cat.includes('qualid') || cat.includes('saúde')) placeholderClass = 'placeholder-quality';
+
             htmlContent += `
                 <article class="blog-card">
-                    <div class="blog-card-content">
-                        <span class="blog-category">${post.category}</span>
-                        <span class="blog-date">${dateStr}</span>
-                        <h3>${post.title}</h3>
+                    <div class="blog-image ${placeholderClass}"></div>
+                    <div class="blog-content">
+                        <span class="blog-tag">${post.category}</span>
+                        <span style="font-size: 0.8rem; color: #64748b; margin-left: 10px;">${dateStr}</span>
+                        <h3 style="margin-top: 10px;">${post.title}</h3>
                         <p>${post.content.substring(0, 150)}...</p>
-                        <a href="#" class="link-arrow">Ler Artigo &rarr;</a>
+                        <a href="#" class="read-more">Ler Artigo &rarr;</a>
                     </div>
                 </article>`;
         });
@@ -49,16 +56,24 @@ function publish() {
         const startMarker = '<!-- BLOG_LIST_START -->';
         const endMarker = '<!-- BLOG_LIST_END -->';
 
-        const startIdx = index.indexOf(startMarker);
-        const endIdx = index.indexOf(endMarker);
-
-        if (startIdx !== -1 && endIdx !== -1) {
-            const before = index.substring(0, startIdx + startMarker.length);
-            const after = index.substring(endIdx);
-            fs.writeFileSync(indexPath, before + '\n' + htmlContent + '\n' + after);
+        // Busca robusta pelos marcadores
+        const regex = new RegExp(`${startMarker}[\\s\\S]*?${endMarker}`, 'g');
+        if (regex.test(index)) {
+            fs.writeFileSync(indexPath, index.replace(regex, `${startMarker}\n${htmlContent}\n${endMarker}`));
             console.log('✅ index.html atualizado.');
         } else {
-            console.error('❌ Marcadores BLOG_LIST_START/END não encontrados no index.html');
+            console.warn('Marcadores não encontrados via Regex. Tentando busca exata.');
+            const startIdx = index.indexOf(startMarker);
+            const endIdx = index.indexOf(endMarker);
+
+            if (startIdx !== -1 && endIdx !== -1) {
+                const before = index.substring(0, startIdx + startMarker.length);
+                const after = index.substring(endIdx);
+                fs.writeFileSync(indexPath, before + '\n' + htmlContent + '\n' + after);
+                console.log('✅ index.html atualizado (busca exata).');
+            } else {
+                console.error('❌ Marcadores BLOG_LIST_START/END não encontrados no index.html');
+            }
         }
     }
 
