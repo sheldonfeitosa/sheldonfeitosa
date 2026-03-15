@@ -242,11 +242,10 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <a href="/#blog" target="_blank" class="btn" style="background: #e2e8f0; color: var(--primary);">Ver
                         no Site</a>
-                    <button id="linkedinBtn" class="btn" style="background: #0077b5; color: white;">Postar no
-                        LinkedIn</button>
+                    <button id="linkedinBtn" class="btn" style="background: #0077b5; color: white;">Copiar Texto e Abrir LinkedIn</button>
                 </div>
-                <p class="subtitle" style="margin-top: 12px; text-align: center; font-size: 0.8rem;">
-                    O botão do LinkedIn copiará o texto e abrirá o LinkedIn para você colar.
+                <p class="subtitle" style="margin-top: 12px; text-align: center; font-size: 0.85rem; color: #1e293b; background: #e0f2fe; padding: 10px; border-radius: 6px;">
+                    ✅ <b>O texto já foi copiado!</b> Quando o LinkedIn abrir, basta clicar em "Sobre o que você quer falar?" e apertar <b>Ctrl + V</b> para colar.
                 </p>
             </div>
         </div>
@@ -323,8 +322,16 @@
             const textToCopy = `🚀 Novo Artigo: ${lastPostTitle}\n\n${lastPostContent}\n\nLeia mais em: https://sheldonfeitosa.com.br`;
 
             navigator.clipboard.writeText(textToCopy).then(() => {
-                alert('Conteúdo copiado para a área de transferência! Abrindo o LinkedIn...');
-                window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://sheldonfeitosa.com.br'), '_blank');
+                // Feedback visual rápido no botão
+                const originalText = linkedinBtn.textContent;
+                linkedinBtn.textContent = '✅ Copiado! Abrindo...';
+                linkedinBtn.style.background = '#059669';
+                
+                setTimeout(() => {
+                    linkedinBtn.textContent = originalText;
+                    linkedinBtn.style.background = '#0077b5';
+                    window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://sheldonfeitosa.com.br'), '_blank');
+                }, 1000);
             }).catch(err => {
                 console.error('Erro ao copiar:', err);
                 window.open('https://www.linkedin.com/feed/', '_blank');
