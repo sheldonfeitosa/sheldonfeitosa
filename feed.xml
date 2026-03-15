@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+<channel>
+    <title>Blog | Sheldon Feitosa</title>
+    <description>Insights sobre Gestão de Saúde, Qualidade e Tecnologia.</description>
+    <link>https://sheldonfeitosa.com.br</link>
+    <lastBuildDate>Sun, 15 Mar 2026 16:53:19 GMT</lastBuildDate>
+
+    <item>
+        <title>teste</title>
+        <link>https://sheldonfeitosa.com.br#blog</link>
+        <description>testestes...</description>
+        <pubDate>Sun, 15 Mar 2026 16:53:19 GMT</pubDate>
+        <category>Tecnologia</category>
+    </item>
+</channel>
+</rss>
