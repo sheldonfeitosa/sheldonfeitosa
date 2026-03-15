@@ -200,7 +200,8 @@
     <div class="container">
         <header>
             <h1>Editor de Insights</h1>
-            <p class="subtitle">Escreva e publique diretamente no seu site.</p>
+            <p class="subtitle">Escreva e publique diretamente no seu site e LinkedIn.</p>
+            <a href="/" style="font-size: 0.8rem; color: #64748b; text-decoration: none;">Sair do Painel</a>
         </header>
 
         <div class="card">
@@ -222,7 +223,12 @@
 
                 <div class="form-group">
                     <label for="content">Conteúdo (Markdown ou Texto Simples)</label>
-                    <textarea id="content" rows="10" required placeholder="Escreva seu artigo aqui..."></textarea>
+                    <textarea id="content" rows="10" required placeholder="Escreva seu texto aqui. Cada quebra de linha vira um parágrafo novo..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="videoUrl">Link do Vídeo (Opcional - YouTube)</label>
+                    <input type="url" id="videoUrl" placeholder="Ex: https://www.youtube.com/watch?v=..." >
                 </div>
 
                 <button type="submit" id="submitBtn" class="btn btn-primary">Publicar Artigo</button>
@@ -273,11 +279,13 @@
             const title = document.getElementById('title').value;
             const content = document.getElementById('content').value;
             const category = document.getElementById('category').value;
+            const videoUrl = document.getElementById('videoUrl').value;
 
             const data = {
                 title: title,
                 category: category,
                 content: content,
+                videoUrl: videoUrl,
                 date: new Date().toISOString()
             };
 
