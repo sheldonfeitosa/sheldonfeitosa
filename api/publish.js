@@ -127,9 +127,20 @@ async function generateUpdatedIndex(token, repo, branch, posts) {
             if (cat.includes('tec') || cat.includes('api')) placeholderClass = 'placeholder-tech';
             if (cat.includes('qualid') || cat.includes('saúde')) placeholderClass = 'placeholder-quality';
 
+            // Lógica de Vídeo
+            let videoHtml = '';
+            if (post.videoUrl) {
+                const videoId = extractYoutubeId(post.videoUrl);
+                if (videoId) {
+                    videoHtml = `<div class="blog-video" style="margin-bottom: 15px; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9;">
+                        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>`;
+                }
+            }
+
             htmlContent += `
                 <article class="blog-card">
-                    <div class="blog-image ${placeholderClass}"></div>
+                    ${videoHtml ? videoHtml : `<div class="blog-image ${placeholderClass}"></div>`}
                     <div class="blog-content">
                         <span class="blog-tag">${post.category}</span>
                         <span style="font-size: 0.8rem; color: #64748b; margin-left: 10px;">${dateStr}</span>
@@ -209,6 +220,13 @@ async function deleteFromGithub(token, repo, branch, path, message) {
         branch
     };
     return githubRequest(token, 'DELETE', `/repos/${repo}/contents/${path}`, body);
+}
+
+function extractYoutubeId(url) {
+    if (!url) return null;
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
 }
 
 function githubRequest(token, method, path, body = null) {
