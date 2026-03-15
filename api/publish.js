@@ -82,20 +82,38 @@ async function generateUpdatedIndex(token, repo, branch, posts) {
     const endMarker = '<!-- BLOG_LIST_END -->';
 
     let htmlContent = '';
-    posts.forEach(post => {
-        const dateStr = new Date(post.date).toLocaleDateString('pt-BR');
-        htmlContent += `
-            <article class="blog-card">
-                <div class="blog-card-content">
-                    <span class="blog-category">${post.category}</span>
-                    <span class="blog-date">${dateStr}</span>
-                    <h3>${post.title}</h3>
-                    <p>${post.content.substring(0, 150)}...</p>
-                    <a href="#" class="link-arrow">Ler Artigo &rarr;</a>
-                </div>
-            </article>`;
-    });
+    if (posts.length === 0) {
+        htmlContent = '<p style="text-align: center; grid-column: 1/-1; padding: 40px; color: #64748b;">Nenhum artigo publicado ainda.</p>';
+    } else {
+        posts.forEach(post => {
+            const dateStr = new Date(post.date).toLocaleDateString('pt-BR');
+            // Mapear categoria para placeholder de cor do CSS
+            let placeholderClass = 'placeholder-management';
+            const cat = (post.category || '').toLowerCase();
+            if (cat.includes('tec') || cat.includes('api')) placeholderClass = 'placeholder-tech';
+            if (cat.includes('qualid') || cat.includes('saúde')) placeholderClass = 'placeholder-quality';
 
+            htmlContent += `
+                <article class="blog-card">
+                    <div class="blog-image ${placeholderClass}"></div>
+                    <div class="blog-content">
+                        <span class="blog-tag">${post.category}</span>
+                        <span style="font-size: 0.8rem; color: #64748b; margin-left: 10px;">${dateStr}</span>
+                        <h3 style="margin-top: 10px;">${post.title}</h3>
+                        <p>${post.content.substring(0, 150)}...</p>
+                        <a href="#" class="read-more">Ler Artigo &rarr;</a>
+                    </div>
+                </article>`;
+        });
+    }
+
+    // Busca robusta pelos marcadores (ignorando espaços extras ou quebras de linha)
+    const regex = new RegExp(`${startMarker}[\\s\\S]*?${endMarker}`, 'g');
+    if (regex.test(index)) {
+        return index.replace(regex, `${startMarker}\n${htmlContent}\n${endMarker}`);
+    }
+
+    console.warn('Marcadores não encontrados via Regex. Tentando busca exata.');
     const startIdx = index.indexOf(startMarker);
     const endIdx = index.indexOf(endMarker);
 
